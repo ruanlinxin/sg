@@ -1,0 +1,6 @@
+deploy.sh
+dist
+.DS_Store
+._*
+.npm-cache
+node_modules

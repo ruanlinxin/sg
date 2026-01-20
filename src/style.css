@@ -1,0 +1,61 @@
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #1e1e1e;
+  background-color: #ffffff;
+
+  --line: #1e1e1e;
+  --pad: 12px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+/* 全局强制隐藏滚动条（仍可滚动） */
+html,
+body,
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+#app {
+  width: 100%;
+}
+
+a {
+  color: inherit;
+}
+
+.line-box {
+  border: 1px solid var(--line);
+  padding: var(--pad);
+}
+
+.line-row {
+  border-top: 1px solid var(--line);
+}
+
+.muted {
+  opacity: 0.72;
+}
