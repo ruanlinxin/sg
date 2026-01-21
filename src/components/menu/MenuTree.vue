@@ -42,6 +42,8 @@ const emit = defineEmits<{
   (e: 'navigate', payload: { to: RouteLocationRaw }): void
 }>()
 
+const router = useRouter()
+
 const inner = ref<Set<MenuKey>>(new Set(props.defaultOpenIds))
 
 const openSet = computed(() => {
@@ -71,7 +73,6 @@ function toggle(id: MenuKey) {
 }
 
 function navigate(to: RouteLocationRaw) {
-  const router = useRouter()
   emit('navigate', { to })
   router.push(to)
 }

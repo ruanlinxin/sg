@@ -48,7 +48,7 @@
 
 <script setup lang="ts">
 import tkJsonUrl from './gettkjson.json?url'
-import { getCachedTkList, setCachedTkList, type TkItem } from './tkIdb'
+import { getCachedTkList, setCachedTkList, type TkItem } from '@/db'
 
 type TkSource = 'idb' | 'json' | 'none'
 

@@ -27,9 +27,14 @@ const menuItems: MenuItem[] = [
     to: '/'
   },
   {
-    id: 'game-settings',
-    label: '游戏设定',
-    to: '/game-settings'
+    id: 'table-stats',
+    label: '表格统计',
+    to: '/table-stats'
+  },
+  {
+    id: 'changelog',
+    label: '更新日志',
+    to: '/changelog'
   }
 ]
 </script>

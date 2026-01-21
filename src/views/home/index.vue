@@ -3,8 +3,7 @@
     <section class="line-box block">
       <QaSearch />
     </section>
-
-    <Calendar />
+    <!-- <Calendar /> -->
   </div>
 </template>
 
