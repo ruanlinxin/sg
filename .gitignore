@@ -1,6 +1,7 @@
-deploy.sh
+script
 dist
 .DS_Store
 ._*
 .npm-cache
 node_modules
+deploy.sh
