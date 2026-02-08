@@ -1,0 +1,16 @@
+node_modules
+.git
+.gitignore
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.vscode
+.idea
+.env.local
+.env.*.local
+coverage
+.nyc_output
+auto-imports.d.ts
+.eslintrc-auto-import.json

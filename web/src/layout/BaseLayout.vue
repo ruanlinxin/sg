@@ -1,100 +1,114 @@
 <template>
-  <div class="app-shell">
-    <aside class="app-side" aria-label="侧边栏">
-      <MenuTree :items="menuItems" />
+  <a-layout class="layout">
+    <a-layout-sider
+      :width="240"
+      breakpoint="lg"
+      collapsible
+      :default-collapsed="false"
+      hide-trigger
+      class="layout-sider"
+    >
+      <div class="logo">
+        <span class="logo-text">SG Game</span>
+      </div>
+      <a-menu
+        :selected-keys="[route.name as string]"
+        @menu-item-click="handleMenuClick"
+      >
+        <a-menu-item key="home">
+          <template #icon><icon-home /></template>
+          首页
+        </a-menu-item>
+        <a-menu-item key="table-stats">
+          <template #icon><icon-calendar /></template>
+          表格统计
+        </a-menu-item>
+        <a-menu-item key="changelog">
+          <template #icon><icon-history /></template>
+          更新日志
+        </a-menu-item>
+      </a-menu>
+    </a-layout-sider>
 
-      <!-- <div class="side-foot">
-        <div class="side-foot-line" />
-        <div class="side-foot-text">极简线条布局</div>
-      </div> -->
-    </aside>
+    <a-layout class="layout-main">
+      <a-layout-content class="layout-content">
+        <RouterView />
+      </a-layout-content>
 
-    <main class="app-main" aria-label="页面内容">
-      <RouterView />
-      
-    </main>
-  </div>
+      <a-layout-footer class="layout-footer">
+        <div class="beian">
+          <!-- 备案号区域，手动填充 -->
+          <span class="beian-text">备案号：浙ICP备2026005933号</span>
+        </div>
+      </a-layout-footer>
+    </a-layout>
+  </a-layout>
 </template>
 
 <script setup lang="ts">
-import type { MenuItem } from '../components'
-import { MenuTree } from '../components'
+import { useRoute, useRouter } from 'vue-router'
+import { IconHome, IconCalendar, IconHistory } from '@arco-design/web-vue/es/icon'
 
-const menuItems: MenuItem[] = [
-  {
-    id: 'home',
-    label: '首页',
-    to: '/'
-  },
-  {
-    id: 'table-stats',
-    label: '表格统计',
-    to: '/table-stats'
-  },
-  {
-    id: 'changelog',
-    label: '更新日志',
-    to: '/changelog'
+const route = useRoute()
+const router = useRouter()
+
+const handleMenuClick = (key: string) => {
+  const pathMap: Record<string, string> = {
+    home: '/',
+    'table-stats': '/table-stats',
+    changelog: '/changelog'
   }
-]
+  router.push(pathMap[key] || '/')
+}
 </script>
 
 <style scoped>
-.app-shell {
-  --side-w: 240px;
-  --pad: 12px;
-  --pad-lg: 16px;
-}
-
-.app-side {
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: var(--side-w);
-  border-right: 1px solid var(--line);
-  padding: var(--pad);
-  display: flex;
-  flex-direction: column;
-  gap: var(--pad);
-  background: #fff;
-  overflow: auto;
-}
-
-.side-foot {
-  margin-top: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.side-foot-line {
-  height: 1px;
-  background: var(--line);
-}
-
-.side-foot-text {
-  font-size: 12px;
-  opacity: 0.75;
-}
-
-.app-main {
-  margin-left: var(--side-w);
+.layout {
   min-height: 100vh;
-  padding: var(--pad-lg);
-  background: #fff;
 }
 
-@media (max-width: 720px) {
-  .app-side {
-    position: static;
-    width: 100%;
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
-  }
+.layout-sider {
+  background: #fff;
+  border-right: 1px solid var(--color-border);
+}
 
-  .app-main {
-    margin-left: 0;
-  }
+.logo {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.logo-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-1);
+}
+
+.layout-main {
+  background: var(--color-fill-2);
+}
+
+.layout-content {
+  padding: 16px;
+  margin: 16px;
+  background: #fff;
+  border-radius: 4px;
+}
+
+.layout-footer {
+  padding: 16px;
+  background: transparent;
+  text-align: center;
+}
+
+.beian {
+  color: var(--color-text-3);
+  font-size: 12px;
+}
+
+.beian-text {
+  /* 备案号样式，可根据需要修改 */
 }
 </style>

@@ -6,6 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "boot": "npm install",
     "build": "nest build",
     "deploy": "bash ./script/deploy.sh",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",

@@ -1,48 +1,61 @@
 <template>
   <div class="qa">
-    <div class="qa-head">
-      <input
-        ref="inputEl"
-        v-model="searchQuery"
-        class="qa-input"
-        type="search"
-        autocomplete="off"
-        placeholder="搜索题库：支持 question / indexes"
-      />
-      <button class="qa-btn" type="button" :disabled="!searchQuery.trim()" @click="clearSearch">
-        清空
-      </button>
-    </div>
+    <a-space direction="vertical" fill size="medium">
+      <a-input-group class="qa-head">
+        <a-input-search
+          ref="inputEl"
+          v-model="searchQuery"
+          class="qa-input"
+          placeholder="搜索题库：支持 question / indexes"
+          allow-clear
+          search-button
+          @search="handleSearch"
+          @clear="clearSearch"
+        />
+      </a-input-group>
 
-    <div class="muted qa-meta">
-      <span v-if="tkLoading">题库加载中…</span>
-      <span v-else-if="tkError">题库加载失败：{{ tkError }}</span>
-      <span v-else>题库：{{ tkList.length }} 条（来源：{{ tkSourceText }}）</span>
-      <template v-if="normalizedQuery">
-        · 命中 {{ matchedTotal }} 条
-        <span v-if="matchedTotal > resultLimit">（仅展示前 {{ resultLimit }} 条）</span>
-      </template>
-    </div>
+      <a-typography-text type="secondary" class="qa-meta">
+        <span v-if="tkLoading">题库加载中…</span>
+        <span v-else-if="tkError">题库加载失败：{{ tkError }}</span>
+        <span v-else>题库：{{ tkList.length }} 条（来源：{{ tkSourceText }}）</span>
+        <template v-if="normalizedQuery">
+          · 命中 {{ matchedTotal }} 条
+          <span v-if="matchedTotal > resultLimit">（仅展示前 {{ resultLimit }} 条）</span>
+        </template>
+      </a-typography-text>
 
-    <div v-if="normalizedQuery" class="qa-results">
-      <div v-if="matchedList.length === 0" class="muted">无匹配结果</div>
-      <div v-else class="qa-list">
-        <div v-for="item in matchedList" :key="itemKey(item)" class="qa-item">
-          <div class="qa-q">
-            <template v-for="(p, i) in highlightParts(item.question, normalizedQuery)" :key="i">
-              <span :class="p.hit ? 'hit' : ''">{{ p.text }}</span>
+      <div v-if="normalizedQuery" class="qa-results">
+        <a-empty v-if="matchedList.length === 0" description="无匹配结果" />
+        <div v-else class="qa-list">
+          <a-card
+            v-for="item in matchedList"
+            :key="itemKey(item)"
+            class="qa-item"
+            :bordered="true"
+            size="small"
+          >
+            <template #title>
+              <div class="qa-q">
+                <template v-for="(p, i) in highlightParts(item.question, normalizedQuery)" :key="i">
+                  <a-tag v-if="p.hit" color="arcoblue" class="hit-tag">{{ p.text }}</a-tag>
+                  <span v-else>{{ p.text }}</span>
+                </template>
+              </div>
             </template>
-          </div>
-          <div class="qa-i muted">
-            <span class="qa-i-label">indexes：</span>
-            <template v-for="(p, i) in highlightParts(item.indexes ?? '-', normalizedQuery)" :key="i">
-              <span :class="p.hit ? 'hit' : ''">{{ p.text }}</span>
-            </template>
-          </div>
-          <div class="qa-a">{{ item.answer }}</div>
+            <a-typography-text type="secondary" class="qa-i">
+              <span class="qa-i-label">indexes：</span>
+              <template v-for="(p, i) in highlightParts(item.indexes ?? '-', normalizedQuery)" :key="i">
+                <a-tag v-if="p.hit" color="arcoblue" class="hit-tag">{{ p.text }}</a-tag>
+                <span v-else>{{ p.text }}</span>
+              </template>
+            </a-typography-text>
+            <a-typography-text type="danger" class="qa-a">
+              {{ item.answer }}
+            </a-typography-text>
+          </a-card>
         </div>
       </div>
-    </div>
+    </a-space>
   </div>
 </template>
 
@@ -88,6 +101,10 @@ function clearSearch() {
   debouncedQuery.value = ''
 }
 
+function handleSearch() {
+  // 搜索逻辑由 watch 处理
+}
+
 function normalizeItem(raw: unknown): TkItem | null {
   if (!raw || typeof raw !== 'object') return null
   const x = raw as Record<string, unknown>
@@ -104,7 +121,6 @@ async function loadFromJsonAndCache() {
   tkError.value = null
   try {
     const res = await fetch(tkJsonUrl, { cache: 'force-cache' })
-    console.log(res,'res')
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data = (await res.json()) as unknown
     if (!Array.isArray(data)) throw new Error('JSON 数据不是数组')
@@ -144,7 +160,6 @@ async function initTk() {
 
 onMounted(() => {
   void initTk()
-  inputEl.value?.focus()
 })
 
 const matchedAll = computed(() => {
@@ -209,32 +224,6 @@ function highlightParts(text: string, query: string): HighlightPart[] {
 
 .qa-input {
   flex: 1;
-  width: 100%;
-  border: 1px solid var(--line);
-  background: transparent;
-  padding: 8px 10px;
-  font-size: 13px;
-  outline: none;
-}
-
-.qa-input:focus {
-  box-shadow: 0 0 0 2px rgba(15, 125, 167, 0.15);
-}
-
-.qa-btn {
-  border: 1px solid var(--line);
-  background: transparent;
-  padding: 6px 10px;
-  cursor: pointer;
-}
-
-.qa-btn:hover {
-  background: rgba(30, 30, 30, 0.06);
-}
-
-.qa-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
 }
 
 .qa-meta {
@@ -242,27 +231,34 @@ function highlightParts(text: string, query: string): HighlightPart[] {
 }
 
 .qa-results {
-  max-height: 400px;
+  max-height: 500px;
   overflow: auto;
 }
 
-.qa-item {
-  padding: 10px 0;
+.qa-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.qa-item + .qa-item {
-  border-top: 1px solid var(--line);
+.qa-item :deep(.arco-card-header) {
+  padding-bottom: 8px;
+}
+
+.qa-item :deep(.arco-card-body) {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .qa-q {
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
 }
 
 .qa-i {
   font-size: 12px;
-  margin-bottom: 6px;
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -272,15 +268,12 @@ function highlightParts(text: string, query: string): HighlightPart[] {
 }
 
 .qa-a {
-  font-size: 12px;
-  color: #d12b2b;
+  font-size: 13px;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
-.hit {
-  background: rgba(255, 210, 84, 0.6);
-  box-shadow: inset 0 0 0 1px rgba(30, 30, 30, 0.18);
-  padding: 0 1px;
+.hit-tag {
+  margin: 0 2px;
 }
 </style>

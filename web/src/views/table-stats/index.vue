@@ -1,9 +1,9 @@
 <template>
   <div class="page">
-    <div class="sheet">
+    <a-card :bordered="false" class="sheet-card">
       <Loading v-if="loading" overlay text="表格加载中…" />
       <div ref="containerEl" class="sheet-inner" />
-    </div>
+    </a-card>
   </div>
 </template>
 
@@ -39,13 +39,11 @@ onBeforeUnmount(() => {
   gap: 12px;
 }
 
-.sheet {
+.sheet-card {
   position: relative;
   min-height: 520px;
-  height: calc(100vh - 32px);
-  border-radius: 8px;
+  height: calc(100vh - 200px);
   overflow: hidden;
-  background: #fff;
 }
 
 .sheet-inner {
