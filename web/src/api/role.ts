@@ -46,30 +46,30 @@ export interface QueryParams {
 
 // 创建角色
 export function createRole(data: CreateRoleData) {
-  return request.post('/roles', data)
+  return request.post('/system/roles', data)
 }
 
 // 获取角色列表
 export function getRoleList(params: QueryParams = {}) {
-  return request.get<RoleListResponse>('/roles', { params })
+  return request.get<RoleListResponse>('/system/roles', { params })
 }
 
 // 获取所有角色（简单列表）
 export function getRoleSimpleList() {
-  return request.get<RoleItem[]>('/roles/simple')
+  return request.get<RoleItem[]>('/system/roles/simple')
 }
 
 // 获取角色详情
 export function getRoleById(id: string) {
-  return request.get<RoleItem>(`/roles/${id}`)
+  return request.get<RoleItem>(`/system/roles/${id}`)
 }
 
 // 更新角色
 export function updateRole(id: string, data: UpdateRoleData) {
-  return request.put(`/roles/${id}`, data)
+  return request.put(`/system/roles/${id}`, data)
 }
 
 // 删除角色
 export function deleteRole(id: string) {
-  return request.delete(`/roles/${id}`)
+  return request.delete(`/system/roles/${id}`)
 }

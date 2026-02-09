@@ -39,6 +39,15 @@ export class QuestionController {
   }
 
   /**
+   * 获取所有题目（不分页，用于前端缓存）
+   * GET /questions/all
+   */
+  @Get('all')
+  async findAllRaw() {
+    return await this.questionService.findAllRaw();
+  }
+
+  /**
    * 根据ID查询题目
    * GET /questions/:id
    */

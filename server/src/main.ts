@@ -26,6 +26,5 @@ async function bootstrap() {
   console.log(`Environment: ${env}`);
   console.log(`Application is running on:`);
   console.log(`  - Local:   http://localhost:${port}`);
-  console.log(`  - Network: http://${hostname}:${port}`);
 }
 bootstrap();

@@ -50,10 +50,10 @@
     <template #search>
       <a-space>
         <a-input-search
-          v-model="listPage.searchKeyword.value"
+          v-model="listPage.searchKeyword"
           placeholder="搜索题目内容"
           search-button
-          :loading="listPage.searchLoading.value"
+          :loading="listPage.searchLoading"
           @search="listPage.handleSearch"
           @clear="listPage.handleClearSearch"
           allow-clear

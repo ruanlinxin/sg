@@ -6,7 +6,6 @@ import { AppService } from './app.service';
 import { CommonModule } from '@/common/common.module';
 import { QuestionModule } from '@/modules/question/question.module';
 import { SystemModule } from '@/modules/system/system.module';
-import { AuthModule } from '@/modules/auth/auth.module';
 import { FallbackModule } from './fallback.module';
 import { databaseConfig, appConfig, validate } from '@/config';
 
@@ -42,7 +41,6 @@ import { databaseConfig, appConfig, validate } from '@/config';
     // 业务模块
     QuestionModule,
     SystemModule,
-    AuthModule,
 
     // Fallback 模块（必须最后导入，处理 404）
     FallbackModule,

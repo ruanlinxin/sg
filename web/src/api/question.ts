@@ -69,3 +69,8 @@ export function syncQuestions() {
     skipped: number
   }>('/questions/sync')
 }
+
+// 获取所有题目（不分页，用于前端缓存）
+export function getAllQuestions() {
+  return request.get<Pick<QuestionItem, 'question' | 'answer' | 'indexes'>[]>('/questions/all')
+}

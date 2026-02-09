@@ -1,6 +1,6 @@
 import { Entity, Column, ManyToMany, JoinTable } from 'typeorm';
 import { BaseEntity } from '@/common/entities';
-import { User } from '@/modules/user/entities/user.entity';
+import { User } from '@/modules/system/user/entities/user.entity';
 
 @Entity('roles')
 export class Role extends BaseEntity {

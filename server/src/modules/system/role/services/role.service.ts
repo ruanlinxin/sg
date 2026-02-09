@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like } from 'typeorm';
 import { Role } from '../entities/role.entity';
-import { User } from '@/modules/user/entities/user.entity';
+import { User } from '@/modules/system/user/entities/user.entity';
 import { CreateRoleDto, UpdateRoleDto, RoleQueryDto } from '../dto';
 
 @Injectable()

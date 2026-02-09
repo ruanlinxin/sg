@@ -60,10 +60,10 @@
 </template>
 
 <script setup lang="ts">
-import tkJsonUrl from './gettkjson.json?url'
+import { getAllQuestions } from '@/api/question'
 import { getCachedTkList, setCachedTkList, type TkItem } from '@/db'
 
-type TkSource = 'idb' | 'json' | 'none'
+type TkSource = 'idb' | 'api' | 'none'
 
 const tkList = ref<TkItem[]>([])
 const tkLoading = ref(false)
@@ -88,7 +88,7 @@ const normalizedQuery = computed(() => debouncedQuery.value.trim().toLowerCase()
 
 const tkSourceText = computed(() => {
   if (tkSource.value === 'idb') return '缓存'
-  if (tkSource.value === 'json') return '本地文件'
+  if (tkSource.value === 'api') return '服务器'
   return '-'
 })
 
@@ -116,18 +116,17 @@ function normalizeItem(raw: unknown): TkItem | null {
   return { id, question, answer, indexes }
 }
 
-async function loadFromJsonAndCache() {
+async function loadFromApiAndCache() {
   tkLoading.value = true
   tkError.value = null
   try {
-    const res = await fetch(tkJsonUrl, { cache: 'force-cache' })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const data = (await res.json()) as unknown
-    if (!Array.isArray(data)) throw new Error('JSON 数据不是数组')
+    const res = await getAllQuestions()
+    const data = res.data
+    if (!Array.isArray(data)) throw new Error('返回数据不是数组')
 
     const list = data.map(normalizeItem).filter(Boolean) as TkItem[]
     tkList.value = list
-    tkSource.value = 'json'
+    tkSource.value = 'api'
 
     void setCachedTkList(list)
   } catch (e) {
@@ -155,7 +154,7 @@ async function initTk() {
     tkLoading.value = false
   }
 
-  void loadFromJsonAndCache()
+  void loadFromApiAndCache()
 }
 
 onMounted(() => {

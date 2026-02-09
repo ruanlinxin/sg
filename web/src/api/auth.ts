@@ -33,15 +33,15 @@ export interface AuthResponse {
 
 // 登录
 export function login(data: LoginData) {
-  return request.post<AuthResponse>('/auth/login', data)
+  return request.post<AuthResponse>('/system/auth/login', data)
 }
 
 // 注册
 export function register(data: RegisterData) {
-  return request.post<AuthResponse>('/auth/register', data)
+  return request.post<AuthResponse>('/system/auth/register', data)
 }
 
 // 获取当前用户信息
 export function getProfile() {
-  return request.get<UserInfo>('/auth/profile')
+  return request.get<UserInfo>('/system/auth/profile')
 }

@@ -40,25 +40,25 @@ export interface QueryParams {
 
 // 创建用户
 export function createUser(data: CreateUserData) {
-  return request.post('/users', data)
+  return request.post('/system/users', data)
 }
 
 // 获取用户列表
 export function getUserList(params: QueryParams = {}) {
-  return request.get<UserListResponse>('/users', { params })
+  return request.get<UserListResponse>('/system/users', { params })
 }
 
 // 获取用户详情
 export function getUserById(id: string) {
-  return request.get<UserItem>(`/users/${id}`)
+  return request.get<UserItem>(`/system/users/${id}`)
 }
 
 // 更新用户
 export function updateUser(id: string, data: UpdateUserData) {
-  return request.put(`/users/${id}`, data)
+  return request.put(`/system/users/${id}`, data)
 }
 
 // 删除用户
 export function deleteUser(id: string) {
-  return request.delete(`/users/${id}`)
+  return request.delete(`/system/users/${id}`)
 }

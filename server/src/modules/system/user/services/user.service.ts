@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -16,14 +16,6 @@ export class UserService {
    * 创建用户
    */
   async create(createDto: CreateUserDto): Promise<User> {
-    // 检查邮箱是否已存在
-    const existingEmail = await this.userRepository.findOne({
-      where: { email: createDto.email },
-    });
-    if (existingEmail) {
-      throw new ConflictException('邮箱已被使用');
-    }
-
     // 加密密码
     const hashedPassword = await bcrypt.hash(createDto.password, 10);
 
@@ -141,16 +133,6 @@ export class UserService {
 
     if (!user) {
       throw new NotFoundException(`用户ID ${id} 不存在`);
-    }
-
-    // 检查邮箱是否被其他用户使用
-    if (updateDto.email && updateDto.email !== user.email) {
-      const existingEmail = await this.userRepository.findOne({
-        where: { email: updateDto.email },
-      });
-      if (existingEmail) {
-        throw new ConflictException('邮箱已被使用');
-      }
     }
 
     // 如果更新密码，需要加密

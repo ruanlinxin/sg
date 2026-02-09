@@ -8,9 +8,6 @@
       hide-trigger
       class="layout-sider"
     >
-      <div class="logo">
-        <span class="logo-text">SG Game</span>
-      </div>
       <a-menu
         :selected-keys="[route.name as string]"
         @menu-item-click="handleMenuClick"
@@ -278,19 +275,6 @@ onMounted(() => {
   position: relative;
 }
 
-.logo {
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.logo-text {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--color-text-1);
-}
 
 .layout-main {
   background: var(--color-fill-2);

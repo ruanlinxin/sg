@@ -93,6 +93,17 @@ export class QuestionService {
   }
 
   /**
+   * 获取所有题目（不分页，用于前端缓存）
+   */
+  async findAllRaw(): Promise<Pick<Question, 'question' | 'answer' | 'indexes'>[]> {
+    return await this.questionRepository.find({
+      where: { status: 1 },
+      order: { createdAt: 'DESC' },
+      select: ['question', 'answer', 'indexes'],
+    });
+  }
+
+  /**
    * 从外部 API 同步题目数据
    */
   async syncQuestions(): Promise<{

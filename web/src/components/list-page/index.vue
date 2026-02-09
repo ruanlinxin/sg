@@ -98,8 +98,10 @@
 </template>
 
 <script setup lang="ts">
+import { computed, unref } from 'vue'
 import { IconPlus } from '@arco-design/web-vue/es/icon'
 import dayjs from 'dayjs'
+import type { Ref } from 'vue'
 
 interface Props {
   title: string
@@ -110,12 +112,12 @@ interface Props {
   showActions?: boolean
   actionWidth?: number
 
-  // 状态
-  loading: boolean
-  submitting: boolean
-  editSubmitting: boolean
-  searchLoading: boolean
-  list: any[]
+  // 状态 - 支持 ref 或普通值
+  loading: boolean | Ref<boolean>
+  submitting: boolean | Ref<boolean>
+  editSubmitting: boolean | Ref<boolean>
+  searchLoading: boolean | Ref<boolean>
+  list: any[] | Ref<any[]>
   pagination: {
     total: number
     current: number
@@ -124,15 +126,23 @@ interface Props {
     showJumper: boolean
     showPageSize: boolean
     pageSizeOptions: number[]
-  }
-  searchKeyword: string
-  addModalVisible: boolean
-  editModalVisible: boolean
-  form: any
-  editForm: any
+  } | Ref<{
+    total: number
+    current: number
+    pageSize: number
+    showTotal: boolean
+    showJumper: boolean
+    showPageSize: boolean
+    pageSizeOptions: number[]
+  }>
+  searchKeyword: string | Ref<string>
+  addModalVisible: boolean | Ref<boolean>
+  editModalVisible: boolean | Ref<boolean>
+  form: any | Ref<any>
+  editForm: any | Ref<any>
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   addText: '新增',
   addTitle: '新增',
   searchPlaceholder: '搜索',
@@ -141,7 +151,7 @@ withDefaults(defineProps<Props>(), {
   actionWidth: 180
 })
 
-defineEmits<{
+const emit = defineEmits<{
   add: []
   'add-submit': []
   'add-cancel': []
@@ -152,7 +162,46 @@ defineEmits<{
   delete: [record: any]
   'edit-submit': []
   'edit-cancel': []
+  'update:searchKeyword': [value: string]
+  'update:addModalVisible': [value: boolean]
+  'update:editModalVisible': [value: boolean]
+  'update:form': [value: any]
+  'update:editForm': [value: any]
 }>()
+
+// 使用 computed 解包 ref 并实现 v-model 双向绑定
+const searchKeyword = computed({
+  get: () => unref(props.searchKeyword),
+  set: (value) => emit('update:searchKeyword', value)
+})
+
+const addModalVisible = computed({
+  get: () => unref(props.addModalVisible),
+  set: (value) => emit('update:addModalVisible', value)
+})
+
+const editModalVisible = computed({
+  get: () => unref(props.editModalVisible),
+  set: (value) => emit('update:editModalVisible', value)
+})
+
+const form = computed({
+  get: () => unref(props.form),
+  set: (value) => emit('update:form', value)
+})
+
+const editForm = computed({
+  get: () => unref(props.editForm),
+  set: (value) => emit('update:editForm', value)
+})
+
+// 解包其他可能为 ref 的 props
+const loading = computed(() => unref(props.loading))
+const submitting = computed(() => unref(props.submitting))
+const editSubmitting = computed(() => unref(props.editSubmitting))
+const searchLoading = computed(() => unref(props.searchLoading))
+const list = computed(() => unref(props.list))
+const pagination = computed(() => unref(props.pagination))
 
 // 格式化日期
 const formatDate = (date: string) => {
