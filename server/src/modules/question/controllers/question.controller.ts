@@ -8,6 +8,7 @@ import {
   Param,
   Query,
   ValidationPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { QuestionService } from '../services/question.service';
 import {
@@ -15,6 +16,8 @@ import {
   UpdateQuestionDto,
   QuestionQueryDto,
 } from '../dto';
+import { JwtAuthGuard } from '@/modules/system/auth/guards/jwt-auth.guard';
+import { Roles, RolesGuard } from '@/common';
 
 @Controller('questions')
 export class QuestionController {
@@ -25,6 +28,8 @@ export class QuestionController {
    * POST /questions
    */
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   async create(@Body(ValidationPipe) createDto: CreateQuestionDto) {
     return await this.questionService.create(createDto);
   }
@@ -34,12 +39,15 @@ export class QuestionController {
    * GET /questions?page=1&pageSize=10&keyword=xxx
    */
   @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   async findAll(@Query(ValidationPipe) queryDto: QuestionQueryDto) {
     return await this.questionService.findAll(queryDto);
   }
 
   /**
    * 获取所有题目（不分页，用于前端缓存）
+   * 公开访问，不需要鉴权
    * GET /questions/all
    */
   @Get('all')
@@ -52,6 +60,8 @@ export class QuestionController {
    * GET /questions/:id
    */
   @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   async findById(@Param('id') id: string) {
     return await this.questionService.findById(id);
   }
@@ -61,6 +71,8 @@ export class QuestionController {
    * PUT /questions/:id
    */
   @Put(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   async update(
     @Param('id') id: string,
     @Body(ValidationPipe) updateDto: UpdateQuestionDto,
@@ -73,6 +85,8 @@ export class QuestionController {
    * DELETE /questions/:id
    */
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   async remove(@Param('id') id: string) {
     await this.questionService.remove(id);
     return null;
@@ -83,6 +97,8 @@ export class QuestionController {
    * POST /questions/sync
    */
   @Post('sync')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   async sync() {
     return await this.questionService.syncQuestions();
   }

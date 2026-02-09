@@ -8,11 +8,16 @@ import {
   Param,
   Query,
   ValidationPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { RoleService } from '../services/role.service';
 import { CreateRoleDto, UpdateRoleDto, RoleQueryDto } from '../dto';
+import { JwtAuthGuard } from '@/modules/system/auth/guards/jwt-auth.guard';
+import { Roles, RolesGuard } from '@/common';
 
 @Controller('roles')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin')
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 

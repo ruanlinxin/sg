@@ -8,11 +8,16 @@ import {
   Param,
   Query,
   ValidationPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from '../services/user.service';
 import { CreateUserDto, UpdateUserDto, UserQueryDto } from '../dto';
+import { JwtAuthGuard } from '@/modules/system/auth/guards/jwt-auth.guard';
+import { Roles, RolesGuard } from '@/common';
 
 @Controller('users')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

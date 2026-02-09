@@ -27,11 +27,13 @@ export class AuthService {
       throw new UnauthorizedException('用户名或密码错误');
     }
 
-    // 生成JWT token
+    // 生成JWT token（包含角色信息）
+    const roles = user.roles?.map(role => role.code) || [];
     const payload = {
       sub: user.id,
       username: user.username,
       email: user.email,
+      roles,
     };
 
     const token = this.jwtService.sign(payload);
@@ -70,11 +72,12 @@ export class AuthService {
       nickname: registerDto.nickname,
     });
 
-    // 生成JWT token
+    // 生成JWT token（新用户无角色）
     const payload = {
       sub: user.id,
       username: user.username,
       email: user.email,
+      roles: [],
     };
 
     const token = this.jwtService.sign(payload);

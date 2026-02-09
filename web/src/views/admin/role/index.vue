@@ -1,67 +1,15 @@
 <template>
   <div class="page">
-    <a-typography-title :heading="4">角色管理</a-typography-title>
-
-    <!-- 录入表单 -->
-    <a-card title="录入新角色" class="form-card">
-      <a-form :model="form" @submit="handleSubmit" auto-label-width>
-        <a-form-item field="code" label="角色编码" required>
-          <a-input
-            v-model="form.code"
-            placeholder="请输入角色编码，如：admin"
-            allow-clear
-          />
-        </a-form-item>
-
-        <a-form-item field="name" label="角色名称" required>
-          <a-input
-            v-model="form.name"
-            placeholder="请输入角色名称"
-            allow-clear
-          />
-        </a-form-item>
-
-        <a-form-item field="description" label="角色描述">
-          <a-textarea
-            v-model="form.description"
-            placeholder="可选：输入角色描述"
-            :auto-size="{ minRows: 2, maxRows: 4 }"
-            allow-clear
-          />
-        </a-form-item>
-
-        <a-form-item field="userIds" label="关联用户">
-          <a-select
-            v-model="form.userIds"
-            placeholder="请选择关联用户"
-            multiple
-            :loading="userLoading"
-            allow-clear
-          >
-            <a-option
-              v-for="user in userList"
-              :key="user.id"
-              :value="user.id"
-              :label="user.username"
-            >
-              {{ user.username }} ({{ user.email }})
-            </a-option>
-          </a-select>
-        </a-form-item>
-
-        <a-form-item>
-          <a-space>
-            <a-button type="primary" html-type="submit" :loading="submitting">
-              保存角色
-            </a-button>
-            <a-button @click="resetForm">重置</a-button>
-          </a-space>
-        </a-form-item>
-      </a-form>
-    </a-card>
+    <div class="page-header">
+      <a-typography-title :heading="4">角色管理</a-typography-title>
+      <a-button type="primary" @click="handleAdd">
+        <template #icon><icon-plus /></template>
+        新增角色
+      </a-button>
+    </div>
 
     <!-- 角色列表 -->
-    <a-card title="角色列表" class="list-card">
+    <a-card class="list-card">
       <a-space direction="vertical" fill>
         <!-- 搜索栏 -->
         <a-input-search
@@ -130,91 +78,28 @@
       </a-space>
     </a-card>
 
-    <!-- 编辑弹窗 -->
-    <a-modal
-      v-model:visible="editModalVisible"
-      title="编辑角色"
-      @ok="handleEditSubmit"
-      @cancel="editModalVisible = false"
-      :ok-loading="editSubmitting"
-      unmount-on-close
-    >
-      <a-form :model="editForm" auto-label-width>
-        <a-form-item field="code" label="角色编码" required>
-          <a-input
-            v-model="editForm.code"
-            placeholder="请输入角色编码"
-          />
-        </a-form-item>
-
-        <a-form-item field="name" label="角色名称" required>
-          <a-input
-            v-model="editForm.name"
-            placeholder="请输入角色名称"
-          />
-        </a-form-item>
-
-        <a-form-item field="description" label="角色描述">
-          <a-textarea
-            v-model="editForm.description"
-            placeholder="可选：输入角色描述"
-            :auto-size="{ minRows: 2, maxRows: 4 }"
-          />
-        </a-form-item>
-
-        <a-form-item field="userIds" label="关联用户">
-          <a-select
-            v-model="editForm.userIds"
-            placeholder="请选择关联用户"
-            multiple
-            :loading="userLoading"
-            allow-clear
-          >
-            <a-option
-              v-for="user in userList"
-              :key="user.id"
-              :value="user.id"
-              :label="user.username"
-            >
-              {{ user.username }} ({{ user.email }})
-            </a-option>
-          </a-select>
-        </a-form-item>
-      </a-form>
-    </a-modal>
+    <!-- 新增/编辑弹窗 -->
+    <edit-modal
+      ref="editModalRef"
+      :user-list="userList"
+      :user-loading="userLoading"
+      @success="handleSuccess"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import { IconPlus } from '@arco-design/web-vue/es/icon'
 import { Message, Modal } from '@arco-design/web-vue'
 import dayjs from 'dayjs'
 import {
-  createRole,
   getRoleList,
-  updateRole,
   deleteRole,
-  type RoleItem,
-  type CreateRoleData
+  type RoleItem
 } from '@/api/role'
 import { getUserList, type UserItem } from '@/api/user'
+import EditModal from './edit-modal.vue'
 
-// 表单数据
-interface RoleForm {
-  code: string
-  name: string
-  description: string
-  userIds: string[]
-}
-
-const form = ref<RoleForm>({
-  code: '',
-  name: '',
-  description: '',
-  userIds: []
-})
-
-const submitting = ref(false)
-const loading = ref(false)
 const searchLoading = ref(false)
 const searchKeyword = ref('')
 
@@ -230,22 +115,15 @@ const pagination = ref({
 })
 
 // 角色列表
+const loading = ref(false)
 const roleList = ref<RoleItem[]>([])
 
 // 用户列表（用于下拉选择）
 const userList = ref<UserItem[]>([])
 const userLoading = ref(false)
 
-// 编辑相关
-const editModalVisible = ref(false)
-const editSubmitting = ref(false)
-const editingId = ref('')
-const editForm = ref<RoleForm>({
-  code: '',
-  name: '',
-  description: '',
-  userIds: []
-})
+// 弹窗引用
+const editModalRef = ref<InstanceType<typeof EditModal> | null>(null)
 
 // 格式化日期
 const formatDate = (date: string) => {
@@ -283,45 +161,6 @@ const loadUserList = async () => {
   }
 }
 
-// 提交表单
-const handleSubmit = async () => {
-  if (!form.value.code.trim() || !form.value.name.trim()) {
-    Message.warning('请填写角色编码和名称')
-    return
-  }
-
-  submitting.value = true
-  try {
-    const data: CreateRoleData = {
-      code: form.value.code.trim(),
-      name: form.value.name.trim(),
-      description: form.value.description.trim() || undefined,
-      userIds: form.value.userIds.length > 0 ? form.value.userIds : undefined
-    }
-
-    await createRole(data)
-    Message.success('角色创建成功')
-    resetForm()
-    pagination.value.current = 1
-    await loadRoleList()
-  } catch (error: any) {
-    console.error('保存失败:', error)
-    Message.error(error?.response?.data?.message || '保存失败')
-  } finally {
-    submitting.value = false
-  }
-}
-
-// 重置表单
-const resetForm = () => {
-  form.value = {
-    code: '',
-    name: '',
-    description: '',
-    userIds: []
-  }
-}
-
 // 搜索
 const handleSearch = () => {
   pagination.value.current = 1
@@ -341,44 +180,14 @@ const onPageChange = (current: number) => {
   loadRoleList()
 }
 
-// 编辑角色
-const handleEdit = (record: RoleItem) => {
-  editingId.value = record.id
-  editForm.value = {
-    code: record.code,
-    name: record.name,
-    description: record.description || '',
-    userIds: record.users?.map(u => u.id) || []
-  }
-  editModalVisible.value = true
+// 新增角色
+const handleAdd = () => {
+  editModalRef.value?.open()
 }
 
-// 提交编辑
-const handleEditSubmit = async () => {
-  if (!editForm.value.code.trim() || !editForm.value.name.trim()) {
-    Message.warning('请填写角色编码和名称')
-    return
-  }
-
-  editSubmitting.value = true
-  try {
-    const data: any = {
-      code: editForm.value.code.trim(),
-      name: editForm.value.name.trim(),
-      description: editForm.value.description.trim() || undefined,
-      userIds: editForm.value.userIds
-    }
-
-    await updateRole(editingId.value, data)
-    Message.success('更新成功')
-    editModalVisible.value = false
-    await loadRoleList()
-  } catch (error: any) {
-    console.error('更新失败:', error)
-    Message.error(error?.response?.data?.message || '更新失败')
-  } finally {
-    editSubmitting.value = false
-  }
+// 编辑角色
+const handleEdit = (record: RoleItem) => {
+  editModalRef.value?.openEdit(record)
 }
 
 // 删除角色
@@ -400,6 +209,12 @@ const handleDelete = (record: RoleItem) => {
   })
 }
 
+// 操作成功回调
+const handleSuccess = () => {
+  pagination.value.current = 1
+  loadRoleList()
+}
+
 // 初始化加载
 onMounted(() => {
   loadRoleList()
@@ -414,7 +229,12 @@ onMounted(() => {
   gap: 16px;
 }
 
-.form-card,
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .list-card {
   background: #fff;
 }
