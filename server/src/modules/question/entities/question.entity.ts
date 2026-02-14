@@ -29,4 +29,16 @@ export class Question extends BaseEntity {
    */
   @Column({ name: 'created_by', type: 'varchar', length: 36, nullable: true, comment: '创建人ID' })
   createdBy: string;
+
+  /**
+   * 数据来源
+   */
+  @Column({ type: 'varchar', length: 50, nullable: true, comment: '数据来源' })
+  source: string;
+
+  /**
+   * 来源ID
+   */
+  @Column({ name: 'source_id', type: 'varchar', length: 100, nullable: true, comment: '来源ID' })
+  sourceId: string;
 }

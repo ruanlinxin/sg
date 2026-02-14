@@ -60,8 +60,8 @@
 </template>
 
 <script setup lang="ts">
-import { getAllQuestions } from '@/api/question'
-import { getCachedTkList, setCachedTkList, type TkItem } from '@/db'
+import { getAllQuestions, getLatestUpdateTime } from '@/api/question'
+import { getCachedTkList, setCachedTkList, getCachedUpdateTime, setCachedUpdateTime, type TkItem } from '@/db'
 
 type TkSource = 'idb' | 'api' | 'none'
 
@@ -128,7 +128,14 @@ async function loadFromApiAndCache() {
     tkList.value = list
     tkSource.value = 'api'
 
+    // 保存数据到本地缓存
     void setCachedTkList(list)
+
+    // 获取并保存服务器更新时间
+    const timeRes = await getLatestUpdateTime()
+    if (timeRes.data.latestUpdateTime) {
+      void setCachedUpdateTime(timeRes.data.latestUpdateTime)
+    }
   } catch (e) {
     tkError.value = e instanceof Error ? e.message : String(e)
     tkList.value = []
@@ -141,20 +148,51 @@ async function loadFromApiAndCache() {
 async function initTk() {
   tkLoading.value = true
   tkError.value = null
+
   try {
-    const cached = await getCachedTkList()
-    if (cached && cached.length > 0) {
+    // 并行获取服务器更新时间和本地缓存
+    const [serverTimeRes, cached, cachedUpdateTime] = await Promise.all([
+      getLatestUpdateTime(),
+      getCachedTkList(),
+      getCachedUpdateTime(),
+    ])
+
+    const serverUpdateTime = serverTimeRes.data.latestUpdateTime
+
+    // 如果服务器时间和本地时间一致，且有本地缓存，则使用本地缓存
+    if (
+      serverUpdateTime &&
+      cachedUpdateTime === serverUpdateTime &&
+      cached &&
+      cached.length > 0
+    ) {
       tkList.value = cached
       tkSource.value = 'idb'
+      tkLoading.value = false
       return
     }
+
+    // 否则从服务器获取数据
+    await loadFromApiAndCache()
   } catch {
-    // 缓存不可用时直接回退到本地文件
+    // 出错时尝试使用本地缓存
+    try {
+      const cached = await getCachedTkList()
+      if (cached && cached.length > 0) {
+        tkList.value = cached
+        tkSource.value = 'idb'
+        tkLoading.value = false
+        return
+      }
+    } catch {
+      // 本地缓存也不可用
+    }
+
+    // 最后尝试从服务器加载
+    await loadFromApiAndCache()
   } finally {
     tkLoading.value = false
   }
-
-  void loadFromApiAndCache()
 }
 
 onMounted(() => {

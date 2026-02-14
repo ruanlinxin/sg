@@ -56,6 +56,17 @@ export class QuestionController {
   }
 
   /**
+   * 获取最新的更新时间
+   * 公开访问，不需要鉴权
+   * GET /questions/latest-update
+   */
+  @Get('latest-update')
+  async getLatestUpdateTime() {
+    const latestUpdateTime = await this.questionService.getLatestUpdateTime();
+    return { latestUpdateTime };
+  }
+
+  /**
    * 根据ID查询题目
    * GET /questions/:id
    */

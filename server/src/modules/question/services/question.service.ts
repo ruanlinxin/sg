@@ -18,7 +18,10 @@ export class QuestionService {
    * 创建题目
    */
   async create(createDto: CreateQuestionDto): Promise<Question> {
-    const question = this.questionRepository.create(createDto);
+    const question = this.questionRepository.create({
+      ...createDto,
+      source: createDto.source || 'create',
+    });
     return await this.questionRepository.save(question);
   }
 
@@ -104,11 +107,25 @@ export class QuestionService {
   }
 
   /**
+   * 获取最新的更新时间
+   */
+  async getLatestUpdateTime(): Promise<string | null> {
+    const result = await this.questionRepository
+      .createQueryBuilder('question')
+      .select('MAX(question.updatedAt)', 'latestUpdateTime')
+      .where('question.status = :status', { status: 1 })
+      .getRawOne<{ latestUpdateTime: string }>();
+
+    return result?.latestUpdateTime || null;
+  }
+
+  /**
    * 从外部 API 同步题目数据
    */
   async syncQuestions(): Promise<{
     total: number;
     added: number;
+    updated: number;
     skipped: number;
   }> {
     // 步骤一：获取版本号
@@ -130,35 +147,68 @@ export class QuestionService {
     );
 
     const questions = dataResponse.data;
-    let added = 0;
+
+    // 步骤三：从数据库获取 source='sync' 的数据，做成 sourceId -> Question 的 map
+    const existingQuestions = await this.questionRepository.find({
+      where: { source: 'sync' },
+    });
+    const sourceIdMap = new Map<string, Question>();
+    for (const q of existingQuestions) {
+      if (q.sourceId) {
+        sourceIdMap.set(q.sourceId, q);
+      }
+    }
+
+    const toInsert: Partial<Question>[] = [];
+    const toUpdate: Question[] = [];
     let skipped = 0;
 
-    // 步骤三：对比并保存数据
+    // 步骤四：对比数据，分类处理
     for (const item of questions) {
-      // 检查数据库中是否已存在相同的 question
-      const existing = await this.questionRepository.findOne({
-        where: { question: item.question },
-      });
+      const sourceId = String(item.id);
+      const existing = sourceIdMap.get(sourceId);
 
       if (existing) {
-        skipped++;
-        continue;
+        // 已存在，检查内容是否有变化
+        if (
+          existing.question !== item.question ||
+          existing.answer !== item.answer ||
+          existing.indexes !== item.indexes
+        ) {
+          // 有变化则更新
+          existing.question = item.question;
+          existing.answer = item.answer;
+          existing.indexes = item.indexes;
+          existing.updatedAt = new Date();
+          toUpdate.push(existing);
+        } else {
+          skipped++;
+        }
+      } else {
+        // 不存在则加入批量插入列表
+        toInsert.push({
+          question: item.question,
+          answer: item.answer,
+          indexes: item.indexes,
+          source: 'sync',
+          sourceId: sourceId,
+        });
       }
+    }
 
-      // 不存在则创建新记录
-      const newQuestion = this.questionRepository.create({
-        question: item.question,
-        answer: item.answer,
-        indexes: item.indexes,
-      });
+    // 步骤五：批量保存数据
+    if (toInsert.length > 0) {
+      await this.questionRepository.insert(toInsert);
+    }
 
-      await this.questionRepository.save(newQuestion);
-      added++;
+    if (toUpdate.length > 0) {
+      await this.questionRepository.save(toUpdate);
     }
 
     return {
       total: questions.length,
-      added,
+      added: toInsert.length,
+      updated: toUpdate.length,
       skipped,
     };
   }

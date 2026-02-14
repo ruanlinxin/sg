@@ -74,3 +74,8 @@ export function syncQuestions() {
 export function getAllQuestions() {
   return request.get<Pick<QuestionItem, 'question' | 'answer' | 'indexes'>[]>('/questions/all')
 }
+
+// 获取最新的更新时间
+export function getLatestUpdateTime() {
+  return request.get<{ latestUpdateTime: string | null }>('/questions/latest-update')
+}
